@@ -1,0 +1,447 @@
+here<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>al_witify - Anatomy Quiz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background: #0f0c29;
+        }
+
+        /* ===== الخلفية المتحركة ===== */
+        .animated-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0f0c29, #1a1a3e, #24243e, #1b2838, #0f2027);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            25%  { background-position: 100% 50%; }
+            50%  { background-position: 100% 100%; }
+            75%  { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== الدوائر المتوهجة ===== */
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+            pointer-events: none;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+
+        .glow-orb:nth-child(1) { width: 300px; height: 300px; background: rgba(102, 126, 234, 0.15); top: 10%; left: 10%; animation-delay: 0s; }
+        .glow-orb:nth-child(2) { width: 400px; height: 400px; background: rgba(118, 75, 162, 0.12); top: 60%; right: 5%; animation-delay: -7s; }
+        .glow-orb:nth-child(3) { width: 250px; height: 250px; background: rgba(66, 153, 225, 0.1); bottom: 10%; left: 30%; animation-delay: -14s; }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25%      { transform: translate(50px, -30px) scale(1.1); }
+            50%      { transform: translate(-20px, 50px) scale(0.9); }
+            75%      { transform: translate(30px, 20px) scale(1.05); }
+        }
+
+        /* ===== خطوط الشبكة ===== */
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(102, 126, 234, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 30s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0%   { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        /* ===== الحاويات ===== */
+        .screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            display: none;
+        }
+
+        /* ===== واجهة البداية ===== */
+        .intro-content { text-align: center; position: relative; }
+        .logo-ring {
+            width: 180px; height: 180px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            position: relative; animation: ringPulse 3s ease-in-out infinite; margin: 0 auto 40px auto;
+        }
+        .logo-text {
+            font-size: 2rem; font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2, #4299e1);
+            background-size: 200% 200%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: textGradient 4s ease infinite; letter-spacing: 2px;
+        }
+        .subtitle { color: rgba(255, 255, 255, 0.5); font-size: 1rem; margin-bottom: 50px; }
+        .subtitle span { color: rgba(102, 126, 234, 0.7); }
+
+        .start-btn {
+            position: relative; padding: 18px 60px; font-size: 1.3rem; font-weight: 700;
+            font-family: 'Tajawal', sans-serif; color: #fff; background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; border-radius: 50px; cursor: pointer; transition: all 0.4s ease;
+        }
+        .start-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4); }
+
+        /* ===== واجهة الأسئلة ===== */
+        .quiz-container { width: 90%; max-width: 750px; position: relative; margin: auto; }
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 40px; position: relative;
+        }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .question-counter, .score-display { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; }
+        .question-counter span { color: #667eea; font-weight: 700; font-size: 1.1rem; }
+        .score-display span { color: #48bb78; font-weight: 700; }
+
+        .progress-bar { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 10px; transition: width 0.5s ease; }
+
+        /* حاوية الصورة المتجاوبة */
+        .image-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .question-img {
+            max-width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .question-text {
+            color: #fff; font-size: 1.25rem; font-weight: 500; line-height: 1.6; margin-bottom: 25px; text-align: left; direction: ltr;
+        }
+
+        .options-list { display: flex; flex-direction: column; gap: 14px; direction: ltr; }
+        .option-btn {
+            display: flex; align-items: center; gap: 15px; padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px; color: rgba(255, 255, 255, 0.9); font-size: 1rem;
+            cursor: pointer; transition: all 0.3s ease; text-align: left;
+        }
+        .option-btn:hover { background: rgba(102, 126, 234, 0.1); border-color: rgba(102, 126, 234, 0.3); transform: translateX(5px); }
+        
+        .option-btn.correct { background: rgba(72, 187, 120, 0.15); border-color: rgba(72, 187, 120, 0.4); animation: correctPulse 0.5s ease; }
+        .option-btn.correct span { color: #48bb78; font-weight: bold; }
+        
+        .option-btn.wrong { background: rgba(245, 101, 101, 0.15); border-color: rgba(245, 101, 101, 0.4); animation: wrongShake 0.5s ease; }
+        .option-btn.wrong span { color: #f56565; }
+        
+        .option-btn.disabled { pointer-events: none; opacity: 0.6; }
+
+        @keyframes correctPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes wrongShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+        .next-btn {
+            display: none; margin-top: 25px; padding: 12px 35px; font-size: 1.1rem; font-weight: 700;
+            font-family: 'Tajawal', sans-serif; color: #fff; background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; border-radius: 14px; cursor: pointer; transition: all 0.3s ease; float: left;
+        }
+        .next-btn.show { display: block; animation: fadeInUp 0.4s ease; }
+
+        /* شاشة النتيجة */
+        .result-content { text-align: center; }
+        .result-title { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 10px; }
+        .result-score { font-size: 3.5rem; font-weight: 900; background: linear-gradient(135deg, #667eea, #48bb78); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
+        .restart-btn { padding: 16px 50px; font-size: 1.1rem; font-weight: 700; font-family: 'Tajawal', sans-serif; color: #fff; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 50px; cursor: pointer; }
+
+        /* ===== تأثيرات الإيموجي الطائرة ===== */
+        .floating-emoji {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+            animation: floatUpEmoji 1.5s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes floatUpEmoji {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            .quiz-card { padding: 25px 20px; }
+            .question-text { font-size: 1.1rem; }
+            .option-btn { padding: 12px 15px; font-size: 0.95rem; }
+            .logo-ring { width: 140px; height: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="animated-bg"></div>
+    <div class="glow-orb"></div>
+    <div class="glow-orb"></div>
+    <div class="glow-orb"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="screen" id="introScreen">
+        <div class="intro-content">
+            <div class="logo-ring">
+                <span class="logo-text">al_witify</span>
+            </div>
+            <p class="subtitle">اختبار تفاعلي في مادة <span>التشريح</span></p>
+            <button class="start-btn" onclick="startQuiz()">🚀 ابدأ الاختبار</button>
+        </div>
+    </div>
+
+    <div class="screen hidden" id="quizScreen">
+        <div class="quiz-container">
+            <div class="quiz-card" id="quizCardBox">
+                <div class="quiz-header">
+                    <div class="score-display">⭐ النتيجة: <span id="score">0</span></div>
+                    <div class="question-counter">السؤال <span id="currentQ">1</span> من <span id="totalQ">47</span></div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+
+                <div class="image-container">
+                    <img id="questionImg" class="question-img" src="" alt="Anatomy Image">
+                </div>
+
+                <div id="questionArea">
+                    <div class="question-text" id="questionText"></div>
+                    <div class="options-list" id="optionsList"></div>
+                </div>
+
+                <button class="next-btn" id="nextBtn" onclick="nextQuestion()">التالي ←</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen hidden" id="resultScreen">
+        <div class="quiz-container">
+            <div class="quiz-card">
+                <div class="result-content">
+                    <div class="result-title">انتهى الاختبار!</div>
+                    <div class="result-score"><span id="finalScore">0</span> / 47</div>
+                    <button class="restart-btn" onclick="location.reload()">🔄 إعادة الاختبار</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            { img: "H1.jpg", q: "Identify the pinned structure indicated by the pointer in this section of the eye:", options: ["A) Vitreous humor", "B) Hyaloid canal", "C) Sclera", "D) Lens"], ans: 1 },
+            { img: "H2.jpg", q: "Identify the pinned structure indicated by the pointer:", options: ["A) Iris", "B) Ciliary body", "C) Suspensory ligament of lens (Ciliary zonule)", "D) Cornea"], ans: 2 },
+            { img: "H3.jpg", q: "Identify the pinned nerve located within the cavernous sinus:", options: ["A) Oculomotor nerve [III]", "B) Inferior division of oculomotor nerve", "C) Ophthalmic nerve [V1]", "D) Abducens nerve [VI]"], ans: 1 },
+            { img: "H4.jpg", q: "Identify the pinned nerve in the lateral wall of the cavernous sinus:", options: ["A) Oculomotor nerve [III]", "B) Trochlear nerve [IV]", "C) Ophthalmic nerve [V1]", "D) Lacrimal nerve"], ans: 3 },
+            { img: "H5.jpg", q: "Identify the pinned structure passing through the cavernous sinus:", options: ["A) Maxillary artery", "B) Internal carotid artery", "C) Optic nerve", "D) Ophthalmic artery"], ans: 2 },
+            { img: "H6.jpg", q: "Identify the pinned oral mucosa structure indicated by the pointer:", options: ["A) Lingual frenulum", "B) Sublingual caruncle", "C) Sublingual fold", "D) Deep lingual vein"], ans: 3 },
+            { img: "H7.jpg", q: "Identify the pinned structure at the floor of the mouth:", options: ["A) Opening of submandibular duct", "B) Sublingual fold", "C) Lingual frenulum", "D) Sublingual caruncle"], ans: 0 },
+            { img: "H8.jpg", q: "Identify the pinned neck muscle indicated by the pointer:", options: ["A) Sternocleidomastoid muscle", "B) Sternohyoid muscle", "C) Omohyoid muscle", "D) Digastric muscle"], ans: 0 },
+            { img: "H9.jpg", q: "Identify the pinned nerve entering the mandibular foramen:", options: ["A) Inferior alveolar nerve", "B) Mylohyoid nerve", "C) Lingual nerve", "D) Buccal nerve"], ans: 2 },
+            { img: "H10.jpg", q: "Identify the pinned extrinsic tongue muscle:", options: ["A) Genioglossus muscle", "B) Styloglossus muscle", "C) Geniohyoid muscle", "D) Hyoglossus muscle"], ans: 3 },
+            { img: "H11.jpg", q: "Identify the pinned extrinsic tongue muscle:", options: ["A) Styloglossus muscle", "B) Hyoglossus muscle", "C) Genioglossus muscle", "D) Palatoglossus muscle"], ans: 0 },
+            { img: "H12.jpg", q: "Identify the pinned structure of the medial orbital wall:", options: ["A) Ethmoid bone", "B) Lacrimal bone", "C) Lacrimal fossa", "D) Sphenoid bone"], ans: 2 },
+            { img: "H13.jpg", q: "Identify the pinned opening forming the apex of the orbit:", options: ["A) Optic canal", "B) Sphenoid bone (Lesser wing)", "C) Palatine bone", "D) Maxillary bone"], ans: 0 },
+            { img: "H14.jpg", q: "Identify the pinned muscle of mastication:", options: ["A) Masseter muscle", "B) Lateral pterygoid muscle", "C) Medial pterygoid muscle", "D) Temporalis muscle"], ans: 3 },
+            { img: "H15.jpg", q: "Identify the pinned nerve in the temporal bone section:", options: ["A) Facial nerve [VII]", "B) Vestibulocochlear nerve [VIII]", "C) Chorda tympani", "D) Tympanic nerve"], ans: 0 },
+            { img: "H16.jpg", q: "Identify the pinned auditory ossicle:", options: ["A) Malleus", "B) Incus", "C) Stapes", "D) Tympanic membrane"], ans: 1 },
+            { img: "H17.jpg", q: "Identify the pinned cross-sectioned vessel:", options: ["A) Maxillary sinus", "B) Ethmoid air cells", "C) Internal carotid artery", "D) Sphenoid sinus"], ans: 2 },
+            { img: "H18.jpg", q: "Identify the pinned cranial nerve in this section:", options: ["A) Trochlear nerve [IV]", "B) Ophthalmic nerve [V1]", "C) Maxillary nerve [V2]", "D) Oculomotor nerve"], ans: 3 },
+            { img: "H19.jpg", q: "Identify the pinned artery indicated by the pointer:", options: ["A) Greater palatine artery", "B) Lesser palatine artery", "C) Nasopalatine artery", "D) Incisive artery"], ans: 1 },
+            { img: "H20.jpg", q: "Identify the pinned artery indicated by the pointer:", options: ["A) Lesser palatine artery", "B) Greater palatine artery", "C) Nasopalatine artery", "D) Sphenopalatine artery"], ans: 1 },
+            { img: "H21.jpg", q: "Identify the pinned nerve indicated by the pointer:", options: ["A) Lesser palatine nerve", "B) Nasopalatine nerve", "C) Lingual nerve", "D) Greater palatine nerve"], ans: 3 },
+            { img: "H22.jpg", q: "Identify the pinned skull base opening indicated by the pointer:", options: ["A) Sphenopalatine foramen", "B) Foramen spinosum", "C) Jugular foramen", "D) Foramen ovale"], ans: 0 },
+            { img: "H23.jpg", q: "Identify the pinned opening in the inferior nasal meatus:", options: ["A) Opening of nasolacrimal duct", "B) Opening of auditory tube", "C) Sphenoethmoidal recess", "D) Opening of maxillary sinus"], ans: 3 },
+            { img: "H24.jpg", q: "Identify the pinned opening in the nasopharynx:", options: ["A) Opening of nasolacrimal duct", "B) Opening of auditory (Eustachian) tube", "C) Pharyngeal recess", "D) Salpingopharyngeal fold"], ans: 1 },
+            { img: "H25.jpg", q: "Identify the pinned muscle of mastication:", options: ["A) Lateral pterygoid muscle", "B) Masseter muscle", "C) Medial pterygoid muscle", "D) Temporalis muscle"], ans: 2 },
+            { img: "H26.jpg", q: "Identify the pinned nerve passing down to the oral cavity:", options: ["A) Inferior alveolar nerve", "B) Buccal nerve", "C) Auriculotemporal nerve", "D) Lingual nerve"], ans: 3 },
+            { img: "H27.jpg", q: "Identify the pinned neural structure:", options: ["A) Trigeminal ganglion", "B) Maxillary nerve", "C) Motor part of trigeminal nerve", "D) Facial nerve"], ans: 2 },
+            { img: "H28.jpg", q: "Identify the pinned parasympathetic ganglion:", options: ["A) Submandibular ganglion", "B) Otic ganglion", "C) Pterygopalatine ganglion", "D) Ciliary ganglion"], ans: 1 },
+            { img: "H29.jpg", q: "Identify the pinned structure:", options: ["A) Palatine canal", "B) Mylohyoid nerve", "C) Inferior alveolar nerve", "D) Chorda tympani"], ans: 0 },
+            { img: "H30.jpg", q: "Identify the pinned nerve along the medial orbital wall:", options: ["A) Abducens nerve [VI]", "B) Oculomotor nerve [III]", "C) Nasociliary nerve", "D) Trochlear nerve [IV]"], ans: 3 },
+            { img: "H31.jpg", q: "Identify the pinned extraocular muscle:", options: ["A) Superior oblique muscle", "B) Superior rectus muscle", "C) Levator palpebrae superioris muscle", "D) Medial rectus muscle"], ans: 2 },
+            { img: "H32.jpg", q: "Identify the pinned structure under the tongue:", options: ["A) Lingual nerve", "B) Deep lingual vein", "C) Lingual artery", "D) Frenulum of tongue"], ans: 3 },
+            { img: "H33.jpg", q: "Identify the pinned laryngeal structure:", options: ["A) Thyroid cartilage", "B) Arytenoid cartilage", "C) Cricoid cartilage", "D) Epiglottis"], ans: 2 },
+            { img: "H34.jpg", q: "Identify the pinned vocal structure:", options: ["A) Vestibular fold (false vocal cord)", "B) Epiglottis", "C) Piriform recess", "D) Vocal fold (true vocal cord)"], ans: 3 },
+            { img: "H35.jpg", q: "Identify the pinned laryngeal structure:", options: ["A) Epiglottis", "B) Vocal fold", "C) Aryepiglottic fold", "D) Corniculate tubercle"], ans: 0 },
+            { img: "H36.jpg", q: "Identify the pinned recess in the laryngopharynx:", options: ["A) Vallecula", "B) Piriform recess", "C) Palatine tonsil", "D) Laryngeal inlet"], ans: 1 },
+            { img: "H37.jpg", q: "Identify the pinned posterior nasal structure:", options: ["A) Pharyngeal recesses", "B) Pharyngeal tonsil", "C) Choana (Posterior nasal aperture)", "D) Soft palate"], ans: 0 },
+            { img: "H38.jpg", q: "Identify the pinned infrahyoid muscle:", options: ["A) Sternothyroid muscle", "B) Thyrohyoid muscle", "C) Omohyoid muscle", "D) Sternohyoid muscle"], ans: 3 },
+            { img: "H39.jpg", q: "Identify the pinned structure indicated by the pointer:", options: ["A) Hyoid bone", "B) Thyroid cartilage", "C) Fibrous loop for intermediate digastric tendon", "D) Mandible"], ans: 2 },
+            { img: "H40.jpg", q: "Identify the pinned central visual pathway structure:", options: ["A) Optic tract", "B) Optic chiasm", "C) Optic nerve", "D) Infundibulum"], ans: 1 },
+            { img: "H41.jpg", q: "Identify the pinned structure:", options: ["A) Vocal fold", "B) Piriform recess", "C) Aryepiglottic fold", "D) Cuneiform tubercle"], ans: 3 },
+            { img: "H42.jpg", q: "Which nerve is damaged?", options: ["A) Optic nerve", "B) Oculomotor nerve", "C) Trochlear nerve", "D) abducent nerve"], ans: 3 },
+            { img: "H43.jpg", q: "Identify the pinned muscle of the larynx:", options: ["A) Oblique arytenoid muscle", "B) Transverse arytenoid muscle", "C) Posterior cricoarytenoid muscle", "D) Aryepiglottic muscle"], ans: 0 },
+            { img: "H44.jpg", q: "Identify the pinned major neck vessel:", options: ["A) External jugular vein", "B) Internal jugular vein", "C) Anterior jugular vein", "D) Subclavian vein"], ans: 2 },
+            { img: "H45.jpg", q: "What is the name of this problem?", options: ["A) Strabismus", "B) incomplete Ptosis", "C) complete Ptosis", "D) Entropion"], ans: 2 },
+            { img: "H46.jpg", q: "Identify the pinned structures indicated by the pointer:", options: ["A) Thyroid vessels", "B) Internal jugular vein", "C) Vagus nerve", "D) Common carotid artery"], ans: 0 },
+            { img: "H47.jpg", q: "Identify the pinned suprahyoid muscle:", options: ["A) Mylohyoid muscle", "B) Anterior belly of digastric muscle", "C) Geniohyoid muscle", "D) Sternohyoid muscle"], ans: 1 }
+        ];
+
+        let currentQIndex = 0;
+        let score = 0;
+        
+        // نظام الصوت التفاعلي (بدون ملفات خارجية)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // تفاعل الإيموجي
+        function showEmoji(isCorrect, event) {
+            const emoji = document.createElement('div');
+            emoji.className = 'floating-emoji';
+            emoji.innerText = isCorrect ? '🎉✨' : '❌💔';
+            
+            // تحديد موقع الماوس أو العنصر الذي تم الضغط عليه
+            const rect = event.currentTarget.getBoundingClientRect();
+            emoji.style.left = (rect.left + rect.width / 2) + 'px';
+            emoji.style.top = (rect.top) + 'px';
+            
+            document.body.appendChild(emoji);
+            setTimeout(() => emoji.remove(), 1500);
+        }
+
+        function startQuiz() {
+            document.getElementById('introScreen').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('introScreen').style.display = 'none';
+                document.getElementById('quizScreen').style.display = 'flex';
+                document.getElementById('quizScreen').classList.remove('hidden');
+                document.getElementById('totalQ').innerText = quizData.length;
+                loadQuestion();
+            }, 500);
+        }
+
+        function loadQuestion() {
+            const qData = quizData[currentQIndex];
+            document.getElementById('currentQ').innerText = currentQIndex + 1;
+            document.getElementById('questionText').innerText = qData.q;
+            document.getElementById('questionImg').src = qData.img;
+            
+            // تحديث شريط التقدم
+            const progress = ((currentQIndex) / quizData.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = '';
+            
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span>${opt}</span>`;
+                btn.onclick = (e) => selectAnswer(btn, index, e);
+                optionsList.appendChild(btn);
+            });
+
+            document.getElementById('nextBtn').classList.remove('show');
+        }
+
+        function selectAnswer(selectedBtn, selectedIndex, event) {
+            const qData = quizData[currentQIndex];
+            const isCorrect = selectedIndex === qData.ans;
+            const allBtns = document.querySelectorAll('.option-btn');
+            
+            allBtns.forEach((btn, idx) => {
+                btn.classList.add('disabled');
+                if (idx === qData.ans) {
+                    btn.classList.add('correct');
+                }
+            });
+
+            if (isCorrect) {
+                score++;
+                document.getElementById('score').innerText = score;
+                playSound('correct');
+                showEmoji(true, event);
+            } else {
+                selectedBtn.classList.add('wrong');
+                playSound('wrong');
+                showEmoji(false, event);
+            }
+
+            document.getElementById('nextBtn').classList.add('show');
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            if (currentQIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('quizScreen').style.display = 'none';
+                document.getElementById('resultScreen').style.display = 'flex';
+                document.getElementById('resultScreen').classList.remove('hidden');
+                document.getElementById('finalScore').innerText = score;
+            }, 500);
+        }
+    </script>
+</body>
+</html>
